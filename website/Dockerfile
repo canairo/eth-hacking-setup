@@ -5,10 +5,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . /app
 EXPOSE 5000
 
-
-RUN gcc /app/getflag.c -o /app/getflag && \
-    rm /app/getflag.c
-
 RUN mkdir /app/key
 
 RUN useradd -m lain && \

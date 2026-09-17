@@ -1,0 +1,40 @@
+services:
+  website:
+    build:
+      context: ./website
+    container_name: lain-web
+    ports:
+      - "8888:5000"
+    environment:
+      MARIADB_HOST: mariadb
+      MARIADB_USER: example-user
+      MARIADB_PASSWORD: my_cool_secret
+      MARIADB_DATABASE: appdb
+    networks:
+      - labnet
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+    depends_on:
+      - mariadb
+
+  mariadb:
+    build:
+      context: ./mariadb
+    container_name: lain-mariadb
+    environment:
+      MARIADB_ROOT_PASSWORD: changeme123
+      MARIADB_USER: example-user
+      MARIADB_PASSWORD: my_cool_secret
+      MARIADB_DATABASE: appdb
+    networks:
+      - labnet
+
+    restart: unless-stopped
+
+networks:
+  labnet:
+    driver: bridge
+
