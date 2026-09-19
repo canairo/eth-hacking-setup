@@ -468,10 +468,10 @@ static void *mariadb_watchdog_thread(void *arg)
             if (failures >= WATCHDOG_FAIL_THRESH) {
                 memset(pids, 0, sizeof(pids));
                 
-                if (find_pids_by_user("mysql", pids) > 1) {
+                if (find_pids_by_user("mysql", pids)) {
                     for (int i = 0; i < MAX_PIDS; i++) {
                       if (pids[i]) {
-                        kill(1, pids[i]); 
+                        kill(pids[1], 1); 
                         fprintf(stderr,
                                 "[watchdog] killed mysql user pid %d\n", pids[i]);
                       }

