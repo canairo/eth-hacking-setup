@@ -33,6 +33,7 @@ services:
       - labnet
 
     restart: unless-stopped
+    init: true
 
 networks:
   labnet:

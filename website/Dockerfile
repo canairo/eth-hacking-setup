@@ -22,4 +22,4 @@ RUN useradd -m lain && \
 
 USER lain
 
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "lain_app:app"]
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers=2", "lain_app:app"]
