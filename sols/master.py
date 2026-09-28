@@ -28,11 +28,11 @@ def create_server():
 try:
     LHOST = sys.argv[1]
     RHOST = sys.argv[2]
-    MARIADB_RHOST_INTERNAL = sys.argv[3]
-    WEBSERVER_RHOST_INTERNAL = sys.argv[4]
+    MARIADB_RHOST_INTERNAL = "mariadb"
+    WEBSERVER_RHOST_INTERNAL = "webserver"
 
 except:
-    print("Usage: python master.py [LHOST] [RHOST] [MARIADB_RHOST_INTERNAL] [WEBSERVER_RHOST_INTERNAL]")
+    print("Usage: python master.py [LHOST] [RHOST]")
     sys.exit(1)
 
 def web_exploit(shell1, shell2):
