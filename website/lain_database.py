@@ -1,14 +1,13 @@
 #!/usr/bin/env python3
 
 import mariadb
+import os
 
 def initialize_database(filename, secret):
     conn = mariadb.connect(
-        host="mariadb",
-        user="example-user",
-        password="my_cool_secret",
-        database="appdb",
-        port=3306,
+        host = os.environ.get("MARIADB_HOST", "mariadb")
+	user = os.environ.get("MARIADB_USER", "example-user")
+	password = os.environ.get("MARIADB_PASSWORD", "my_cool_secret")
     )
 
     cur = conn.cursor()

