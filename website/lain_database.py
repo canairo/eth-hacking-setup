@@ -9,6 +9,7 @@ def initialize_database(filename, secret):
         host = os.environ.get("MARIADB_HOST", "mariadb"),
         user = os.environ.get("MARIADB_USER", "example-user"),
         password = os.environ.get("MARIADB_PASSWORD", "my_cool_secret"),
+	database = os.environ.get("MARIADB_DATABASE", "appdb")
     )
 
     cur = conn.cursor()
