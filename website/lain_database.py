@@ -2,12 +2,13 @@
 
 import mariadb
 import os
+import base64
 
 def initialize_database(filename, secret):
     conn = mariadb.connect(
-        host = os.environ.get("MARIADB_HOST", "mariadb")
-	user = os.environ.get("MARIADB_USER", "example-user")
-	password = os.environ.get("MARIADB_PASSWORD", "my_cool_secret")
+        host = os.environ.get("MARIADB_HOST", "mariadb"),
+        user = os.environ.get("MARIADB_USER", "example-user"),
+        password = os.environ.get("MARIADB_PASSWORD", "my_cool_secret"),
     )
 
     cur = conn.cursor()
@@ -19,10 +20,12 @@ def initialize_database(filename, secret):
         )
     """)
 
-    cur.execute(
-        "INSERT INTO SECRETS (filename, secret) VALUES (?, ?)",
-        (filename, secret)
-    )
+    for i in range(1, 100):
+
+        cur.execute(
+            "INSERT INTO SECRETS (filename, secret) VALUES (?, ?)",
+            (filename, base64.b64encode(os.urandom(8)).decode())
+        )
 
     conn.commit()
 

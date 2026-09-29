@@ -12,8 +12,6 @@ EXPOSE 5000
 
 RUN mkdir /app/key
 
-
-
 RUN useradd -m lain && \
     chown -R lain:lain /app && \
     chmod 500 /app/* && \
