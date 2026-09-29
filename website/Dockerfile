@@ -16,9 +16,12 @@ RUN mkdir /app/key
 
 RUN useradd -m lain && \
     chown -R lain:lain /app && \
-    chmod 500 /app && \
     chmod 500 /app/* && \
-    chmod 700 /app/key
+    chmod 700 /app/key && \
+    chown root:root /app/flag.txt && \
+    chmod 400 /app/flag.txt && \
+    rm -f /app/Dockerfile && \
+    chmod 500 /app
 
 USER lain
 

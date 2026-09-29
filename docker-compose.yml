@@ -16,9 +16,16 @@ services:
       - ALL
     security_opt:
       - no-new-privileges:true
+      - apparmor:lain-container
     restart: unless-stopped
     depends_on:
       - mariadb
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+
 
   mariadb:
     build:
@@ -31,9 +38,26 @@ services:
       MARIADB_DATABASE: appdb
     networks:
       - labnet
-
+    cap_drop:
+      - ALL
+    cap_add:
+     - CHOWN
+     - DAC_OVERRIDE
+     - FOWNER
+     - SETUID
+     - SETGID
+    security_opt:
+      - apparmor:lain-container
     restart: unless-stopped
     init: true
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 1512M
+    volumes:
+      - ./hardening.cnf:/etc/mysql/conf.d/hardening.cnf:ro
+
 
 networks:
   labnet:
