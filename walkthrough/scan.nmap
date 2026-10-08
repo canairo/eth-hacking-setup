@@ -1,0 +1,26 @@
+# Nmap 7.95 scan initiated Thu Oct  8 00:45:47 2026 as: nmap -sC -sV -p- -Pn -vvv -o scan.nmap 13.58.101.77
+Increasing send delay for 13.58.101.77 from 0 to 5 due to 59 out of 196 dropped probes since last increase.
+Increasing send delay for 13.58.101.77 from 5 to 10 due to 11 out of 16 dropped probes since last increase.
+Increasing send delay for 13.58.101.77 from 10 to 20 due to 22 out of 72 dropped probes since last increase.
+Increasing send delay for 13.58.101.77 from 20 to 40 due to 11 out of 13 dropped probes since last increase.
+Nmap scan report for ec2-13-58-101-77.us-east-2.compute.amazonaws.com (13.58.101.77)
+Host is up, received user-set (0.23s latency).
+Scanned at 2026-10-08 00:45:47 +08 for 3745s
+Not shown: 65533 filtered tcp ports (no-response)
+PORT     STATE SERVICE REASON  VERSION
+22/tcp   open  ssh     syn-ack OpenSSH 9.6p1 Ubuntu 3ubuntu13.19 (Ubuntu Linux; protocol 2.0)
+| ssh-hostkey: 
+|   256 52:f1:d1:9e:0a:e6:07:c5:9d:24:35:1f:42:2c:6d:91 (ECDSA)
+| ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBKHaa7XqNkdUQjCnshmjENRVXeC8RzCOHDPx/R2WdzbBxbOV+MDvQ10sIGw78FCLP4OFSC6IqrMD82b3wrX1FTA=
+|   256 4a:d5:c5:26:10:75:ac:9b:0e:69:0a:0d:96:d8:ab:4d (ED25519)
+|_ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOjso8ksGLRPJA9iUIOeJhbloIy7oCpxJtErYDz7+VNs
+8888/tcp open  http    syn-ack Gunicorn
+| http-methods: 
+|_  Supported Methods: HEAD GET OPTIONS
+|_http-title: LAINLOG
+|_http-server-header: gunicorn
+Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+
+Read data files from: /usr/bin/../share/nmap
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+# Nmap done at Thu Oct  8 01:48:12 2026 -- 1 IP address (1 host up) scanned in 3745.43 seconds

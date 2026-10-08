@@ -155,3 +155,4 @@ if __name__ == "__main__":
 
     result = trigger_ssti(cookie_value)
     print(result)
+
