@@ -13,5 +13,8 @@ RUN apt-get purge -y --auto-remove gcc libc6-dev zlib1g-dev
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
+RUN head /dev/urandom -n 20 | shasum >> /root/flag.txt
+RUN chmod 400 /root/flag.txt
+
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["mariadbd"]
